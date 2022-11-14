@@ -1,1 +1,0 @@
-export var KEY_PATH = '_record_key';
