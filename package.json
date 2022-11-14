@@ -17,6 +17,14 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/changlin-cn/idbc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/changlin-cn/idbc/issues"
+  },
+  "homepage": "https://github.com/changlin-cn/idbc#readme",
   "module": "dist/esm/index.js",
   "typings": "dist/esm/index.d.ts",
   "gitHooks": {
