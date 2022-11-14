@@ -1,6 +1,12 @@
 # idbc
 An Class of IndexedDB wrapper
 
+# Basic Usage
+
+```javascript
+
+```
+
 ## Getting Started
 
 Install dependencies,

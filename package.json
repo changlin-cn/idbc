@@ -1,7 +1,7 @@
 {
-  "private": true,
+  "private": false,
   "name": "idbc",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "keywords": ["indexedDB" ,"indexedDB wrapper","indexedDB class"],
   "scripts": {
     "start": "dumi dev",

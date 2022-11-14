@@ -5,10 +5,14 @@ import {IStoreOptions,TStringPropNames} from './type'
 /**
  * A class of indexedDB wrapper.
  */
-export class Idb<T extends { [p in string]: any }, K extends TStringPropNames<T> =  TStringPropNames<T> > {
+export class Idb<
+T extends { [p in string]: any },
+ K extends TStringPropNames<T> =  TStringPropNames<T> ,
+ Opt extends  IStoreOptions<K, T[K]> =  IStoreOptions<K, T[K]>,
+ > {
   static KEY_PATH = KEY_PATH;
 
-  constructor(dbName: string, dbVersion: number, storeOptions: IStoreOptions<K, T[K]>[]) {
+  constructor(dbName: string, dbVersion: number, storeOptions: Opt[]) {
     this.dbName = dbName;
     this.storeOptions = storeOptions;
     this.dbVersion = dbVersion;
@@ -62,6 +66,18 @@ export class Idb<T extends { [p in string]: any }, K extends TStringPropNames<T>
     });
   };
 
+
+  private checkStoreExsit = (storeName:K)=>{
+    const storeOption = this.storeOptions.find(n=>n.storeName===storeName);
+    if(
+        !storeOption
+    ){
+      throw new Error(`${this.dbName}:${storeName} dose not exist.`)
+        
+    }
+    return storeOption
+  } 
+
   /**
    * Add a record
    * @param storeName 
@@ -71,18 +87,13 @@ export class Idb<T extends { [p in string]: any }, K extends TStringPropNames<T>
   add(storeName: K, record: T[K]): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       const fn = () => {
-        const storeOption = this.storeOptions.find(n=>n.storeName===storeName);
-        if(
-            !storeOption
-        ){
-            reject(new Error(`Can not add record to ${this.dbName}:${storeName }`))
-            return
-        }
+        const storeOption = this.checkStoreExsit(storeName);
+      
         const {keyPath,} = storeOption;
         const key =keyPath ? record[keyPath] :  `${getRandomString()}_${Date.now()}`;
         
         const transaction = this.db!.transaction(storeName , 'readwrite');
-        transaction.objectStore(storeName).put({ ...record, [keyPath || KEY_PATH]: key });
+        transaction.objectStore(storeName).add({ ...record, [keyPath || KEY_PATH]: key });
         transaction.oncomplete = () => {
           resolve(key);
         };
@@ -97,28 +108,23 @@ export class Idb<T extends { [p in string]: any }, K extends TStringPropNames<T>
     });
   }
 
+
   /**
-   * Get records
+   * Get all records
    * @param storeName 
    * @returns 
    */
-  getRecords(storeName: K,):Promise<T[K][]>{
+   getAll(storeName: K,):Promise<T[K][]>{
     return new Promise<T[K][]>((resolve, reject) => {
       const fn = () => {
-        const storeOption = this.storeOptions.find(n=>n.storeName===storeName);
-         if(
-            !storeOption
-        ){
-            reject(new Error(`Can not add record to ${this.dbName}:${storeName}`))
-            return
-        }
-        const {keyPath,} = storeOption;
-        
-        const transaction = this.db!.transaction(storeName,'readonly');
-        transaction.objectStore(storeName).getAll();
-        transaction.oncomplete=(ev=>{
-         resolve(ev.target!.result as T[K][]);
-        });
+        this.checkStoreExsit(storeName);
+
+        const transaction = this.db!.transaction(storeName,'readonly').objectStore(storeName).getAll();
+        transaction.onsuccess=()=>{
+          // debugger
+          resolve(transaction.result as T[K][]);
+        };
+      
         transaction.onerror=reject
       };
 
@@ -129,4 +135,91 @@ export class Idb<T extends { [p in string]: any }, K extends TStringPropNames<T>
       this.callbacksOfReady.push(fn);
     });
   }
+
+  /**
+   * Add a record
+   * @param storeName 
+   * @param record 
+   * @returns 
+   */
+   put(storeName: K, record: T[K],key:T[K][NonNullable<Opt['keyPath']>]): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      const fn = () => {
+         this.checkStoreExsit(storeName);
+    
+        const transaction = this.db!.transaction(storeName , 'readwrite').objectStore(storeName).put({ ...record });
+       
+        transaction.onsuccess = () => {
+          resolve(key);
+        };
+        transaction.onerror = reject;
+      };
+
+      if (this.db) {
+        fn();
+        return;
+      }
+      this.callbacksOfReady.push(fn);
+    });
+  }
+
+
+  /**
+   * Clear all records
+   * @param storeName 
+   * @returns 
+   */
+   delete(storeName: K,key:T[K][NonNullable<Opt['keyPath']>]):Promise<null>{
+    return new Promise<null>((resolve, reject) => {
+      const fn = () => {
+        this.checkStoreExsit(storeName);
+
+       
+        const transaction = this.db!.transaction(storeName,'readwrite').objectStore(storeName).delete(key);
+        transaction.onsuccess=()=>{
+          // debugger
+          resolve(null);
+        };
+      
+        transaction.onerror=reject
+      };
+
+      if (this.db) {
+        fn();
+        return;
+      }
+      this.callbacksOfReady.push(fn);
+    });
+  }
+
+  /**
+   * Clear all records
+   * @param storeName 
+   * @returns 
+   */
+   clear(storeName: K,):Promise<null>{
+    return new Promise<null>((resolve, reject) => {
+      const fn = () => {
+        this.checkStoreExsit(storeName);
+      
+        const transaction = this.db!.transaction(storeName,'readwrite').objectStore(storeName).clear();
+        transaction.onsuccess=()=>{
+          // debugger
+          resolve(null);
+        };
+      
+        transaction.onerror=reject
+      };
+
+      if (this.db) {
+        fn();
+        return;
+      }
+      this.callbacksOfReady.push(fn);
+    });
+  }
+
+
+  
+
 }
