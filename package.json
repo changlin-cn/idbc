@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/changlin-cn/idbc#readme",
   "module": "dist/esm/index.js",
+  "main": "dist/cjs/index.js",
   "typings": "dist/esm/index.d.ts",
   "gitHooks": {
     "pre-commit": "lint-staged"

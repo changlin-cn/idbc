@@ -1,15 +1,15 @@
 import { getRandomString } from './utils';
-import {KEY_PATH} from './consts'
-import {IStoreOptions,TStringPropNames} from './type'
+import { KEY_PATH } from './consts';
+import { IStoreOptions, TStringPropNames } from './type';
 
 /**
  * A class of indexedDB wrapper.
  */
 export class Idb<
-T extends { [p in string]: any },
- K extends TStringPropNames<T> =  TStringPropNames<T> ,
- Opt extends  IStoreOptions<K, T[K]> =  IStoreOptions<K, T[K]>,
- > {
+  T extends { [p in string]: any },
+  K extends TStringPropNames<T> = TStringPropNames<T>,
+  Opt extends IStoreOptions<K, T[K]> = IStoreOptions<K, T[K]>,
+> {
   static KEY_PATH = KEY_PATH;
 
   constructor(dbName: string, dbVersion: number, storeOptions: Opt[]) {
@@ -24,7 +24,7 @@ T extends { [p in string]: any },
   dbVersion: number;
 
   storeOptions: IStoreOptions<K, T[K]>[];
-  
+
   private db?: IDBDatabase;
 
   private callbacksOfReady: Function[] = [];
@@ -38,7 +38,7 @@ T extends { [p in string]: any },
 
   /**
    * Open DB
-   * @returns 
+   * @returns
    */
   private open = () => {
     return new Promise<any>((resolve, reject) => {
@@ -53,9 +53,9 @@ T extends { [p in string]: any },
 
       request.onupgradeneeded = () => {
         this.db = request.result;
-        this.storeOptions.forEach(({ storeName, indexes,keyPath }) => {
-          if (!this.db!.objectStoreNames.contains(storeName )) {
-            const store = this.db!.createObjectStore(storeName , { keyPath:(keyPath ) ||  KEY_PATH });
+        this.storeOptions.forEach(({ storeName, indexes, keyPath }) => {
+          if (!this.db!.objectStoreNames.contains(storeName)) {
+            const store = this.db!.createObjectStore(storeName, { keyPath: keyPath || KEY_PATH });
             indexes?.forEach(({ name }) => {
               store.createIndex(name, name, { unique: false });
             });
@@ -66,33 +66,29 @@ T extends { [p in string]: any },
     });
   };
 
-
-  private checkStoreExsit = (storeName:K)=>{
-    const storeOption = this.storeOptions.find(n=>n.storeName===storeName);
-    if(
-        !storeOption
-    ){
-      throw new Error(`${this.dbName}:${storeName} dose not exist.`)
-        
+  private checkStoreExsit = (storeName: K) => {
+    const storeOption = this.storeOptions.find((n) => n.storeName === storeName);
+    if (!storeOption) {
+      throw new Error(`${this.dbName}:${storeName} dose not exist.`);
     }
-    return storeOption
-  } 
+    return storeOption;
+  };
 
   /**
    * Add a record
-   * @param storeName 
-   * @param record 
-   * @returns 
+   * @param storeName
+   * @param record
+   * @returns
    */
   add(storeName: K, record: T[K]): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       const fn = () => {
         const storeOption = this.checkStoreExsit(storeName);
-      
-        const {keyPath,} = storeOption;
-        const key =keyPath ? record[keyPath] :  `${getRandomString()}_${Date.now()}`;
-        
-        const transaction = this.db!.transaction(storeName , 'readwrite');
+
+        const { keyPath } = storeOption;
+        const key = keyPath ? record[keyPath] : `${getRandomString()}_${Date.now()}`;
+
+        const transaction = this.db!.transaction(storeName, 'readwrite');
         transaction.objectStore(storeName).add({ ...record, [keyPath || KEY_PATH]: key });
         transaction.oncomplete = () => {
           resolve(key);
@@ -108,24 +104,25 @@ T extends { [p in string]: any },
     });
   }
 
-
   /**
    * Get all records
-   * @param storeName 
-   * @returns 
+   * @param storeName
+   * @returns
    */
-   getAll(storeName: K,):Promise<T[K][]>{
+  getAll(storeName: K): Promise<T[K][]> {
     return new Promise<T[K][]>((resolve, reject) => {
       const fn = () => {
         this.checkStoreExsit(storeName);
 
-        const transaction = this.db!.transaction(storeName,'readonly').objectStore(storeName).getAll();
-        transaction.onsuccess=()=>{
+        const transaction = this.db!.transaction(storeName, 'readonly')
+          .objectStore(storeName)
+          .getAll();
+        transaction.onsuccess = () => {
           // debugger
           resolve(transaction.result as T[K][]);
         };
-      
-        transaction.onerror=reject
+
+        transaction.onerror = reject;
       };
 
       if (this.db) {
@@ -138,17 +135,19 @@ T extends { [p in string]: any },
 
   /**
    * Add a record
-   * @param storeName 
-   * @param record 
-   * @returns 
+   * @param storeName
+   * @param record
+   * @returns
    */
-   put(storeName: K, record: T[K],key:T[K][NonNullable<Opt['keyPath']>]): Promise<string> {
+  put(storeName: K, record: T[K], key: T[K][NonNullable<Opt['keyPath']>]): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       const fn = () => {
-         this.checkStoreExsit(storeName);
-    
-        const transaction = this.db!.transaction(storeName , 'readwrite').objectStore(storeName).put({ ...record });
-       
+        this.checkStoreExsit(storeName);
+
+        const transaction = this.db!.transaction(storeName, 'readwrite')
+          .objectStore(storeName)
+          .put({ ...record });
+
         transaction.onsuccess = () => {
           resolve(key);
         };
@@ -163,25 +162,25 @@ T extends { [p in string]: any },
     });
   }
 
-
   /**
    * Clear all records
-   * @param storeName 
-   * @returns 
+   * @param storeName
+   * @returns
    */
-   delete(storeName: K,key:T[K][NonNullable<Opt['keyPath']>]):Promise<null>{
+  delete(storeName: K, key: T[K][NonNullable<Opt['keyPath']>]): Promise<null> {
     return new Promise<null>((resolve, reject) => {
       const fn = () => {
         this.checkStoreExsit(storeName);
 
-       
-        const transaction = this.db!.transaction(storeName,'readwrite').objectStore(storeName).delete(key);
-        transaction.onsuccess=()=>{
+        const transaction = this.db!.transaction(storeName, 'readwrite')
+          .objectStore(storeName)
+          .delete(key);
+        transaction.onsuccess = () => {
           // debugger
           resolve(null);
         };
-      
-        transaction.onerror=reject
+
+        transaction.onerror = reject;
       };
 
       if (this.db) {
@@ -194,21 +193,23 @@ T extends { [p in string]: any },
 
   /**
    * Clear all records
-   * @param storeName 
-   * @returns 
+   * @param storeName
+   * @returns
    */
-   clear(storeName: K,):Promise<null>{
+  clear(storeName: K): Promise<null> {
     return new Promise<null>((resolve, reject) => {
       const fn = () => {
         this.checkStoreExsit(storeName);
-      
-        const transaction = this.db!.transaction(storeName,'readwrite').objectStore(storeName).clear();
-        transaction.onsuccess=()=>{
+
+        const transaction = this.db!.transaction(storeName, 'readwrite')
+          .objectStore(storeName)
+          .clear();
+        transaction.onsuccess = () => {
           // debugger
           resolve(null);
         };
-      
-        transaction.onerror=reject
+
+        transaction.onerror = reject;
       };
 
       if (this.db) {
@@ -218,8 +219,4 @@ T extends { [p in string]: any },
       this.callbacksOfReady.push(fn);
     });
   }
-
-
-  
-
 }

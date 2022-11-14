@@ -2,9 +2,8 @@ import { defineConfig } from 'dumi';
 
 export default defineConfig({
   title: 'idbc',
-  favicon:
-    'https://user-images.githubusercontent.com/9554297/83762004-a0761b00-a6a9-11ea-83b4-9c8ff721d4b8.png',
-  logo: 'https://user-images.githubusercontent.com/9554297/83762004-a0761b00-a6a9-11ea-83b4-9c8ff721d4b8.png',
+  favicon: 'https://avatars.githubusercontent.com/u/21980338?v=4',
+  logo: 'https://avatars.githubusercontent.com/u/21980338?v=4',
   outputPath: 'docs-dist',
   // more config: https://d.umijs.org/config
 });

@@ -1,40 +1,24 @@
 # idbc
+
 An Class of IndexedDB wrapper
 
 # Basic Usage
 
-```javascript
+```tsx
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Idb } from 'idbc';
 
-```
+const DB_NAME = 'IDBDemo';
+const DB_STORE_NAME = 'IDBDemoStore';
 
-## Getting Started
+interface IInfoItem {
+  recordId: number;
+  value?: string;
+}
 
-Install dependencies,
+const IDBDemo = new Idb<{ [DB_STORE_NAME]: IInfoItem }>(DB_NAME, 1, [
+  { storeName: DB_STORE_NAME, keyPath: 'recordId' },
+]);
 
-```bash
-$ npm i
-```
-
-Start the dev server,
-
-```bash
-$ npm start
-```
-
-Build documentation,
-
-```bash
-$ npm run docs:build
-```
-
-Run test,
-
-```bash
-$ npm test
-```
-
-Build library via `father`,
-
-```bash
-$ npm run build
+IDBDemo.add(DB_STORE_NAME, { recordId: Date.now(), value: 'value' });
 ```

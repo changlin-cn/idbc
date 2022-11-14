@@ -1,1 +1,1 @@
-export * from './idbc'
+export * from './idbc';
