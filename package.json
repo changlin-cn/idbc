@@ -1,7 +1,7 @@
 {
   "private": false,
   "name": "idbc",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "keywords": ["indexedDB" ,"indexedDB wrapper","indexedDB class"],
   "scripts": {
     "start": "dumi dev",
@@ -40,9 +40,10 @@
     ]
   },
   "dependencies": {
-    "react": "^18.0.0"
+   
   },
   "devDependencies": {
+    "react": "^18.0.0",
     "@testing-library/jest-dom": "^5.15.1",
     "@testing-library/react": "^13.0.0",
     "@types/jest": "^27.0.3",
