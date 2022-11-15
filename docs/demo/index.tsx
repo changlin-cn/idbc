@@ -43,6 +43,14 @@ export default () => {
     }
   }, []);
 
+  const handleLog: React.MouseEventHandler<HTMLButtonElement> = useCallback((event) => {
+    const id = event.target.getAttribute('data-id');
+
+    if (id) {
+      IDBDemo.getByKey('IDBDemoStore', Number(id)).then(console.log);
+    }
+  }, []);
+
   useEffect(() => {
     IDBDemo.getAll('IDBDemoStore').then(setList);
   }, []);
@@ -61,6 +69,10 @@ export default () => {
               &nbsp;
               <button data-id={n.recordId} onClick={handleDelete}>
                 remove
+              </button>
+              &nbsp;
+              <button data-id={n.recordId} onClick={handleLog}>
+                getItem and console.log
               </button>
               &nbsp; recordId:<b>{n.recordId}</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; value:
               <b>{n.value}</b>

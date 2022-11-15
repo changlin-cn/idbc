@@ -105,6 +105,35 @@ export class Idb<
   }
 
   /**
+   * Get a record by key
+   * @param storeName
+   * @returns
+   */
+  getByKey(storeName: K, key: T[K][NonNullable<Opt['keyPath']>]): Promise<T[K]> {
+    return new Promise<T[K]>((resolve, reject) => {
+      const fn = () => {
+        this.checkStoreExsit(storeName);
+
+        const transaction = this.db!.transaction(storeName, 'readonly')
+          .objectStore(storeName)
+          .get(key);
+        transaction.onsuccess = () => {
+          // debugger
+          resolve(transaction.result as T[K]);
+        };
+
+        transaction.onerror = reject;
+      };
+
+      if (this.db) {
+        fn();
+        return;
+      }
+      this.callbacksOfReady.push(fn);
+    });
+  }
+
+  /**
    * Get all records
    * @param storeName
    * @returns
