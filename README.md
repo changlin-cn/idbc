@@ -1,6 +1,6 @@
 # idbc
 
-An Class of IndexedDB wrapper
+A Class of IndexedDB wrapper
 
 # Basic Usage
 
